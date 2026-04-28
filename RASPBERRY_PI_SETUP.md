@@ -95,6 +95,15 @@ git clone https://github.com/mochidai/epsign.git
 cd epsign
 ```
 
+Node.js だけ `mise` で入れる場合:
+
+```sh
+mise trust
+mise install
+```
+
+このリポジトリでは Python は `mise` で管理せず、Raspberry Pi OS の system Python を使います。
+
 ## 8. doorsign の環境変数を設定
 
 `.env` を作成します。
