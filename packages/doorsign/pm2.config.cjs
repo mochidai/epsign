@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: "dashboard",
+      name: "doorsign",
       script: "remix-serve",
       args: "build/server/index.js",
       //   instances: "max",

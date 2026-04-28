@@ -1,15 +1,15 @@
 # epsign
 
-Raspberry Pi 4 と Waveshare 7.3inch e-Paper HAT (F) を使った電子ペーパードアサインです。
+Raspberry Pi 4 と Waveshare 10.85 inch e-Paper HAT+ を使った電子ペーパードアサインです。
 
-`packages/dashboard` で在室表示ページと画像を生成し、`packages/drawer` でその画像を取得して電子ペーパーへ描画します。
+`packages/doorsign` で在室表示ページと画像を生成し、`packages/drawer` でその画像を取得して電子ペーパーへ描画します。
 
 <img src="img/sample_doorsign.png" width="400">
 <img src="img/ua_sample_doorsign.png" width="400">
 
 ## 構成
 
-- `packages/dashboard`
+- `packages/doorsign`
   - Remix 製の表示サーバー
   - `/dashboard`, `/image.png`, `/dithered-image.png` を提供
 - `packages/drawer`
@@ -24,13 +24,44 @@ Raspberry Pi 4 と Waveshare 7.3inch e-Paper HAT (F) を使った電子ペーパ
 5. Raspberry Pi で画像を取得して電子ペーパーへ描画する
 
 <img src="img/dithered-image.png" width="600">
+
+## 環境変数の初期設定
+
+### doorsign
+
+`packages/doorsign/.env` を作成して以下を設定します。
+
+```properties
+GOOGLE_CALENDAR_ID="your_calendar_id@example.com"
+GOOGLE_API_KEY="your_google_api_key"
+SERVER_PORT=3000
+```
+
+作成例:
+
+```sh
+cp packages/doorsign/.env.example packages/doorsign/.env
+```
+
+その後、`packages/doorsign/.env` を編集して値を埋めます。
+
+### drawer
+
+`packages/drawer/.env` を作成して以下を設定します。
+
+```properties
+DASHBOARD_URL="http://127.0.0.1:3000/dithered-image.png"
+```
+
+同じ Raspberry Pi 上で `doorsign` を動かすなら、この URL のままで構いません。
+
 ## サーバー
 
 現在の構成では、Raspberry Pi 4 上に server と drawer を同居させる前提です。
 
 ## Docker Compose
 
-`epsign/compose.yaml` で dashboard を起動できます。
+`epsign/compose.yaml` で `doorsign` を起動できます。
 
 ```sh
 docker compose up -d --build

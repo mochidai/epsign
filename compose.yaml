@@ -4,7 +4,7 @@ services:
     ports:
       - "3000:3000"
     env_file:
-      - ./packages/dashboard/.env
+      - ./packages/doorsign/.env
     environment:
       - HOST=0.0.0.0
       - PORT=3000

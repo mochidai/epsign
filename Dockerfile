@@ -3,14 +3,14 @@ FROM mcr.microsoft.com/playwright:v1.49.1-jammy
 WORKDIR /app
 
 COPY package.json package-lock.json ./
-COPY packages/dashboard/package.json ./packages/dashboard/package.json
+COPY packages/doorsign/package.json ./packages/doorsign/package.json
 
 RUN npm install
 RUN npm install @rollup/rollup-linux-arm64-gnu --save-optional
 
 COPY . .
 
-WORKDIR /app/packages/dashboard
+WORKDIR /app/packages/doorsign
 
 RUN npm run build
 

@@ -1,6 +1,6 @@
 # Drawer
 
-`dashboard` が生成した画像を取得し、Raspberry Pi 上で Waveshare 7.3inch e-Paper HAT (F) に描画する Python スクリプトです。
+`doorsign` が生成した画像を取得し、Raspberry Pi 上で Waveshare 10.85 inch e-Paper HAT+ に描画する Python スクリプトです。
 
 ## 必要条件
 
