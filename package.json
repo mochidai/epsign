@@ -1,0 +1,11 @@
+{
+  "name": "epsign",
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "biome": "^0.3.3"
+  },
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ]
+}

@@ -1,0 +1,12 @@
+services:
+  epsign:
+    build: .
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./packages/dashboard/.env
+    environment:
+      - HOST=0.0.0.0
+      - PORT=3000
+      - SERVER_PORT=3000
+      - NODE_ENV=production

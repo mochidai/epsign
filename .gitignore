@@ -1,0 +1,32 @@
+.DS_Store
+*.log
+*~
+
+# Node / Remix
+node_modules/
+.cache/
+.parcel-cache/
+.next/
+dist/
+build/
+coverage/
+*.tsbuildinfo
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+.python-version
+
+# Env files
+.env
+.env.*
+!.env.example
+*.env copy
+
+# Editor
+.vscode/
+
+# Local backups
+*.~*
