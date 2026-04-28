@@ -14,6 +14,12 @@ Raspberry Pi 4 と Waveshare 10.85 inch e-Paper HAT+ を使った電子ペーパ
   - `/dashboard`, `/image.png`, `/dithered-image.png` を提供
 - `packages/drawer`
   - Raspberry Pi 上で画像を取得し、電子ペーパーへ描画する Python スクリプト
+- `scripts/button_controller.py`
+  - `/home/pi/override.json` と `/home/pi/location_state.json` を更新する 2 ボタン監視スクリプト
+- `scripts/update_epd.py`
+  - `/home/pi/update_epd.py` として配置し、`uv run draw-dashboard.py` を呼ぶ更新ラッパー
+- `systemd/epdash-button.service`
+  - ボタン監視スクリプトを常駐させるための systemd テンプレート
 
 ## 処理の流れ
 
