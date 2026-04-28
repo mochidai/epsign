@@ -4,10 +4,9 @@ After=network-online.target
 Wants=network-online.target
 
 [Service]
-ExecStart=/usr/bin/python3 /home/pi/button_controller.py
-WorkingDirectory=/home/pi
+ExecStart=/usr/bin/python3 %h/button_controller.py
+WorkingDirectory=%h
 Restart=always
-User=pi
 
 [Install]
 WantedBy=multi-user.target

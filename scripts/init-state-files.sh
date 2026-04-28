@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-target_dir="${1:-/home/pi}"
+target_dir="${1:-$HOME}"
 
 mkdir -p "$target_dir"
 

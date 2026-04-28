@@ -31,10 +31,10 @@ SERVER_PORT=3000
 
 ## 在室状態ファイル
 
-以下のファイルを Raspberry Pi 側に置く前提です。
+以下のファイルを Raspberry Pi 側のホームディレクトリに置く前提です。
 
-- `/home/pi/override.json`
-- `/home/pi/location_state.json`
+- `$HOME/override.json`
+- `$HOME/location_state.json`
 
 形式:
 

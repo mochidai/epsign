@@ -238,8 +238,11 @@ async function getJapaneseHolidayEvents(): Promise<HolidayEvent[]> {
 }
 
 function getOverrideState(): OverrideState {
+  const homeDir = process.env.HOME ?? "/home/pi";
+  const overridePath = `${homeDir}/override.json`;
+
   try {
-    const raw = fs.readFileSync("/home/pi/override.json", "utf-8");
+    const raw = fs.readFileSync(overridePath, "utf-8");
     return JSON.parse(raw) as OverrideState;
   } catch {
     return { override: null };
@@ -248,9 +251,11 @@ function getOverrideState(): OverrideState {
 
 function getLocationState(): LocationState {
   const today = formatJstDate(new Date());
+  const homeDir = process.env.HOME ?? "/home/pi";
+  const locationStatePath = `${homeDir}/location_state.json`;
 
   try {
-    const raw = fs.readFileSync("/home/pi/location_state.json", "utf-8");
+    const raw = fs.readFileSync(locationStatePath, "utf-8");
     const state = JSON.parse(raw) as LocationState;
 
     if (state.date !== today) {

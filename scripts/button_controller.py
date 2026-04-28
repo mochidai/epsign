@@ -10,16 +10,18 @@ from datetime import datetime
 from pathlib import Path
 
 from gpiozero import Button, LED
+
+HOME_DIR = Path.home()
 OVERRIDE_BUTTON_GPIO = int(os.getenv("OVERRIDE_BUTTON_GPIO", "5"))
 LOCATION_BUTTON_GPIO = int(os.getenv("LOCATION_BUTTON_GPIO", "6"))
 OVERRIDE_LED_GPIO = int(os.getenv("OVERRIDE_LED_GPIO", "16"))
 BUTTON_HOLD_SECONDS = float(os.getenv("BUTTON_HOLD_SECONDS", "1.5"))
 
-OVERRIDE_PATH = Path(os.getenv("OVERRIDE_PATH", "/home/pi/override.json"))
-LOCATION_STATE_PATH = Path(os.getenv("LOCATION_STATE_PATH", "/home/pi/location_state.json"))
+OVERRIDE_PATH = Path(os.getenv("OVERRIDE_PATH", str(HOME_DIR / "override.json")))
+LOCATION_STATE_PATH = Path(os.getenv("LOCATION_STATE_PATH", str(HOME_DIR / "location_state.json")))
 UPDATE_EPD_COMMAND = os.getenv(
     "UPDATE_EPD_COMMAND",
-    "/usr/bin/python3 /home/pi/update_epd.py",
+    f"/usr/bin/python3 {HOME_DIR / 'update_epd.py'}",
 )
 
 

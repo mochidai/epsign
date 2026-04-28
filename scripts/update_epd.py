@@ -3,10 +3,12 @@
 import os
 import subprocess
 import sys
+from pathlib import Path
 
 
-UV_BIN = os.getenv("UV_BIN", "/home/pi/.local/bin/uv")
-DRAW_SCRIPT = os.getenv("DRAW_SCRIPT", "/home/pi/epsign/packages/drawer/draw-dashboard.py")
+HOME_DIR = Path.home()
+UV_BIN = os.getenv("UV_BIN", str(HOME_DIR / ".local/bin/uv"))
+DRAW_SCRIPT = os.getenv("DRAW_SCRIPT", str(HOME_DIR / "epsign/packages/drawer/draw-dashboard.py"))
 
 
 def main():
