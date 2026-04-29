@@ -5,6 +5,7 @@ import os
 import signal
 import subprocess
 import sys
+import threading
 import time
 from datetime import datetime
 from pathlib import Path
@@ -24,6 +25,8 @@ UPDATE_EPD_COMMAND = os.getenv(
     "UPDATE_EPD_COMMAND",
     f"/usr/bin/python3 {HOME_DIR / 'update_epd.py'}",
 )
+update_requested = threading.Event()
+shutdown_requested = threading.Event()
 
 
 def today_jst() -> str:
@@ -74,6 +77,18 @@ def run_update_epd():
         print(f"update_epd failed: {exc}", file=sys.stderr, flush=True)
 
 
+def request_update_epd():
+    update_requested.set()
+
+
+def update_worker():
+    while not shutdown_requested.is_set():
+        if not update_requested.wait(timeout=0.1):
+            continue
+        update_requested.clear()
+        run_update_epd()
+
+
 def refresh_led(override_led: LED):
     state = load_override_state()
     if state.get("override") == "force_off":
@@ -96,7 +111,7 @@ def toggle_override(override_led: LED):
     save_override_state(next_value)
     refresh_led(override_led)
     print(f"override set to: {next_value}", flush=True)
-    run_update_epd()
+    request_update_epd()
 
 
 def toggle_location(location_led: LED):
@@ -105,7 +120,7 @@ def toggle_location(location_led: LED):
     save_location_state(next_location)
     refresh_location_led(location_led)
     print(f"location set to: {next_location}", flush=True)
-    run_update_epd()
+    request_update_epd()
 
 
 def ensure_state_files():
@@ -143,6 +158,8 @@ def main():
         "override_pressed_at": None,
         "override_held": False,
     }
+    worker = threading.Thread(target=update_worker, daemon=True)
+    worker.start()
 
     def on_override_pressed():
         state["override_pressed_at"] = time.monotonic()
@@ -156,7 +173,7 @@ def main():
         if state["override_pressed_at"] is None:
             return
         if not state["override_held"]:
-            run_update_epd()
+            request_update_epd()
         state["override_pressed_at"] = None
         state["override_held"] = False
 
@@ -169,6 +186,8 @@ def main():
     location_button.when_pressed = on_location_pressed
 
     def shutdown_handler(signum, frame):
+        shutdown_requested.set()
+        update_requested.set()
         override_led.close()
         location_led.close()
         override_button.close()

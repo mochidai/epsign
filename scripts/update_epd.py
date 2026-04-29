@@ -13,18 +13,33 @@ DRAW_SCRIPT = os.getenv("DRAW_SCRIPT", str(HOME_DIR / "epsign/packages/drawer/dr
 UPDATE_EPD_TIMEOUT_SECONDS = float(os.getenv("UPDATE_EPD_TIMEOUT_SECONDS", "100"))
 
 
+def terminate_process_group(proc: subprocess.Popen, sig: int):
+    try:
+        os.killpg(proc.pid, sig)
+    except ProcessLookupError:
+        return
+
+
 def main():
     cmd = [UV_BIN, "run", DRAW_SCRIPT]
     timeout = None if UPDATE_EPD_TIMEOUT_SECONDS <= 0 else UPDATE_EPD_TIMEOUT_SECONDS
     proc = subprocess.Popen(cmd, start_new_session=True)
     try:
         returncode = proc.wait(timeout=timeout)
-    except subprocess.TimeoutExpired:
-        os.killpg(proc.pid, signal.SIGTERM)
+    except KeyboardInterrupt:
+        terminate_process_group(proc, signal.SIGTERM)
         try:
             proc.wait(timeout=5)
         except subprocess.TimeoutExpired:
-            os.killpg(proc.pid, signal.SIGKILL)
+            terminate_process_group(proc, signal.SIGKILL)
+            proc.wait()
+        sys.exit(130)
+    except subprocess.TimeoutExpired:
+        terminate_process_group(proc, signal.SIGTERM)
+        try:
+            proc.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            terminate_process_group(proc, signal.SIGKILL)
             proc.wait()
         print(
             f"update_epd timed out after {UPDATE_EPD_TIMEOUT_SECONDS} seconds",
