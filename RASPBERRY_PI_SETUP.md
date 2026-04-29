@@ -60,11 +60,16 @@ sudo reboot
 
 ```sh
 git clone https://github.com/waveshare/e-Paper.git
-cd e-Paper/RaspberryPi_JetsonNano/python
+cd e-Paper/E-paper_Separate_Program/10.85inch_e-Paper/RaspberryPi
 ls lib/waveshare_epd
 ```
 
-10.85 inch 用として `epd10in85.py` があることを確認してください。
+10.85 inch は専用ディレクトリ構成です。以下が見えることを確認してください。
+
+```sh
+ls python/lib/waveshare_epd/epd10in85.py
+ls python/examples/epd_10in85_test.py
+```
 
 ## 5. 配線
 
@@ -74,15 +79,17 @@ ls lib/waveshare_epd
 | GND | GND |
 | DIN | GPIO10 (MOSI) |
 | CLK | GPIO11 (SCLK) |
-| CS | GPIO8 |
+| CS_M | GPIO8 (CE0) |
+| CS_S | GPIO7 (CE1) |
 | DC | GPIO25 |
 | RST | GPIO17 |
 | BUSY | GPIO24 |
+| PWR | GPIO18 |
 
 ## 6. Waveshare 単体テスト
 
 ```sh
-cd examples
+cd python/examples
 python3 epd_10in85_test.py
 ```
 
@@ -293,6 +300,18 @@ epd = epd10in85.EPD()
 epd.init()
 epd.display(epd.getbuffer(img))
 epd.sleep()
+```
+
+このプロジェクトの `drawer` は、デフォルトで次のディレクトリを自動参照します。
+
+```text
+$HOME/e-Paper/E-paper_Separate_Program/10.85inch_e-Paper/RaspberryPi/python/lib
+```
+
+別の場所に clone した場合は、`WAVESHARE_EPD_LIB` で明示できます。
+
+```sh
+export WAVESHARE_EPD_LIB=/path/to/e-Paper/E-paper_Separate_Program/10.85inch_e-Paper/RaspberryPi/python/lib
 ```
 
 ## 19. 定期更新
