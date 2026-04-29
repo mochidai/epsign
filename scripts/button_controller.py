@@ -15,7 +15,7 @@ HOME_DIR = Path.home()
 OVERRIDE_BUTTON_GPIO = int(os.getenv("OVERRIDE_BUTTON_GPIO", "5"))
 LOCATION_BUTTON_GPIO = int(os.getenv("LOCATION_BUTTON_GPIO", "6"))
 OVERRIDE_LED_GPIO = int(os.getenv("OVERRIDE_LED_GPIO", "16"))
-LOCATION_LED_GPIO = int(os.getenv("LOCATION_LED_GPIO", "24"))
+LOCATION_LED_GPIO = int(os.getenv("LOCATION_LED_GPIO", "23"))
 BUTTON_HOLD_SECONDS = float(os.getenv("BUTTON_HOLD_SECONDS", "1.5"))
 
 OVERRIDE_PATH = Path(os.getenv("OVERRIDE_PATH", str(HOME_DIR / "override.json")))

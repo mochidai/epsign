@@ -222,7 +222,7 @@ GPIO の既定値はスクリプト内で以下です。
 - override ボタン: GPIO5
 - location ボタン: GPIO6
 - override LED: GPIO16
-- location LED: GPIO24
+- location LED: GPIO23
 
 必要なら `~/button_controller.py` 内の定数、または環境変数で変更できます。
 
