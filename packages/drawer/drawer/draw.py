@@ -1,10 +1,11 @@
 from PIL import Image
-import epaper
+from importlib import import_module
 
 
 def draw(model: str, img: Image.Image):
     try:
-        epd = epaper.epaper(model).EPD()
+        epd_module = import_module(f"waveshare_epd.{model}")
+        epd = epd_module.EPD()
         epd.init()
         epd.display(epd.getbuffer(img))
         epd.sleep()
@@ -13,13 +14,15 @@ def draw(model: str, img: Image.Image):
         print(e)
 
     except KeyboardInterrupt:
-        epaper.epaper(model).epdconfig.module_exit(cleanup=True)
+        epd_module = import_module(f"waveshare_epd.{model}")
+        epd_module.epdconfig.module_exit(cleanup=True)
         exit()
 
 
 def clear(model: str):
     try:
-        epd = epaper.epaper(model).EPD()
+        epd_module = import_module(f"waveshare_epd.{model}")
+        epd = epd_module.EPD()
         epd.init()
         epd.Clear()
         epd.sleep()
@@ -28,5 +31,6 @@ def clear(model: str):
         print(e)
 
     except KeyboardInterrupt:
-        epaper.epaper(model).epdconfig.module_exit(cleanup=True)
+        epd_module = import_module(f"waveshare_epd.{model}")
+        epd_module.epdconfig.module_exit(cleanup=True)
         exit()

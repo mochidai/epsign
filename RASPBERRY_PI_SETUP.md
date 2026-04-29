@@ -207,13 +207,15 @@ chmod +x ~/update_epd.py
 - override ボタン短押し: `$HOME/update_epd.py` を実行
 - override ボタン長押し: `override.json` を `force_off` と `null` でトグル
 - location ボタン短押し: `location_state.json` の `on_campus` / `off_campus` をトグル
-- LED: `override = force_off` の間だけ点灯
+- override LED: `override = force_off` の間だけ点灯
+- location LED: `location = on_campus` の間だけ点灯
 
 GPIO の既定値はスクリプト内で以下です。
 
 - override ボタン: GPIO5
 - location ボタン: GPIO6
 - override LED: GPIO16
+- location LED: GPIO24
 
 必要なら `~/button_controller.py` 内の定数、または環境変数で変更できます。
 

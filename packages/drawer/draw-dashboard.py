@@ -17,4 +17,4 @@ print("get image from :", url)
 img = get_url_image(url)
 
 print("draw image")
-draw("epd7in3f", img)
+draw("epd10in85", img)

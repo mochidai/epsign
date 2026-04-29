@@ -15,6 +15,7 @@ HOME_DIR = Path.home()
 OVERRIDE_BUTTON_GPIO = int(os.getenv("OVERRIDE_BUTTON_GPIO", "5"))
 LOCATION_BUTTON_GPIO = int(os.getenv("LOCATION_BUTTON_GPIO", "6"))
 OVERRIDE_LED_GPIO = int(os.getenv("OVERRIDE_LED_GPIO", "16"))
+LOCATION_LED_GPIO = int(os.getenv("LOCATION_LED_GPIO", "24"))
 BUTTON_HOLD_SECONDS = float(os.getenv("BUTTON_HOLD_SECONDS", "1.5"))
 
 OVERRIDE_PATH = Path(os.getenv("OVERRIDE_PATH", str(HOME_DIR / "override.json")))
@@ -81,6 +82,14 @@ def refresh_led(override_led: LED):
         override_led.off()
 
 
+def refresh_location_led(location_led: LED):
+    state = load_location_state()
+    if state.get("location") == "on_campus":
+        location_led.on()
+    else:
+        location_led.off()
+
+
 def toggle_override(override_led: LED):
     state = load_override_state()
     next_value = None if state.get("override") == "force_off" else "force_off"
@@ -90,10 +99,11 @@ def toggle_override(override_led: LED):
     run_update_epd()
 
 
-def toggle_location():
+def toggle_location(location_led: LED):
     state = load_location_state()
     next_location = "off_campus" if state.get("location") == "on_campus" else "on_campus"
     save_location_state(next_location)
+    refresh_location_led(location_led)
     print(f"location set to: {next_location}", flush=True)
     run_update_epd()
 
@@ -113,7 +123,9 @@ def main():
     ensure_state_files()
 
     override_led = LED(OVERRIDE_LED_GPIO)
+    location_led = LED(LOCATION_LED_GPIO)
     refresh_led(override_led)
+    refresh_location_led(location_led)
 
     override_button = Button(
         OVERRIDE_BUTTON_GPIO,
@@ -149,7 +161,7 @@ def main():
         state["override_held"] = False
 
     def on_location_pressed():
-        toggle_location()
+        toggle_location(location_led)
 
     override_button.when_pressed = on_override_pressed
     override_button.when_held = on_override_held
@@ -158,6 +170,7 @@ def main():
 
     def shutdown_handler(signum, frame):
         override_led.close()
+        location_led.close()
         override_button.close()
         location_button.close()
         sys.exit(0)

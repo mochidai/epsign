@@ -3,4 +3,4 @@
 from drawer import clear
 
 print("clear epaper")
-clear("epd7in3f")
+clear("epd10in85")
