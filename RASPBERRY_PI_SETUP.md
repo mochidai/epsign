@@ -272,35 +272,27 @@ After=network-online.target
 Wants=network-online.target
 
 [Service]
-ExecStart=/usr/bin/python3 %h/button_controller.py
-WorkingDirectory=%h
+User=mochidai
+Environment=UPDATE_EPD_TIMEOUT_SECONDS=0
+ExecStart=/usr/bin/python3 /home/mochidai/button_controller.py
+WorkingDirectory=/home/mochidai
 Restart=always
 
 [Install]
 WantedBy=multi-user.target
 ```
 
-タイムアウト値を固定したい場合は `Environment` を追加します。
-
-```ini
-[Service]
-Environment=UPDATE_EPD_TIMEOUT_SECONDS=0
-ExecStart=/usr/bin/python3 %h/button_controller.py
-WorkingDirectory=%h
-Restart=always
-```
-
 配置:
 
 ```sh
-sudo cp ~/epsign/systemd/epdash-button.service /etc/systemd/system/epdash-button.service
+sudo cp ~/epsign/systemd/epsign-button.service /etc/systemd/system/epsign-button.service
 ```
 
 有効化:
 
 ```sh
 sudo systemctl daemon-reload
-sudo systemctl enable --now epdash-button.service
+sudo systemctl enable --now epsign-button.service
 ```
 
 ## 17. 電子ペーパーへ描画
