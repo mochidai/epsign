@@ -14,8 +14,9 @@ UPDATE_EPD_TIMEOUT_SECONDS = float(os.getenv("UPDATE_EPD_TIMEOUT_SECONDS", "100"
 
 def main():
     cmd = [UV_BIN, "run", DRAW_SCRIPT]
+    timeout = None if UPDATE_EPD_TIMEOUT_SECONDS <= 0 else UPDATE_EPD_TIMEOUT_SECONDS
     try:
-        subprocess.run(cmd, check=True, timeout=UPDATE_EPD_TIMEOUT_SECONDS)
+        subprocess.run(cmd, check=True, timeout=timeout)
     except subprocess.CalledProcessError as exc:
         print(f"update_epd failed: {exc}", file=sys.stderr)
         sys.exit(exc.returncode)

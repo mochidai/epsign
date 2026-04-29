@@ -18,7 +18,7 @@ Raspberry Pi 4 と Waveshare 10.85 inch e-Paper HAT+ を使った電子ペーパ
   - `$HOME/override.json` と `$HOME/location_state.json` を更新する 2 ボタン監視スクリプト
 - `scripts/update_epd.py`
   - `$HOME/update_epd.py` として配置し、`uv run draw-dashboard.py` を呼ぶ更新ラッパー
-  - 既定で 100 秒タイムアウト。`UPDATE_EPD_TIMEOUT_SECONDS` で変更可能
+  - 既定で 100 秒タイムアウト。`UPDATE_EPD_TIMEOUT_SECONDS` で変更可能。`0` 以下で無制限
 - `systemd/epdash-button.service`
   - ボタン監視スクリプトを常駐させるための systemd テンプレート
 
