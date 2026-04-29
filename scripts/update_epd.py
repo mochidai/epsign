@@ -9,15 +9,22 @@ from pathlib import Path
 HOME_DIR = Path.home()
 UV_BIN = os.getenv("UV_BIN", str(HOME_DIR / ".local/bin/uv"))
 DRAW_SCRIPT = os.getenv("DRAW_SCRIPT", str(HOME_DIR / "epsign/packages/drawer/draw-dashboard.py"))
+UPDATE_EPD_TIMEOUT_SECONDS = float(os.getenv("UPDATE_EPD_TIMEOUT_SECONDS", "100"))
 
 
 def main():
     cmd = [UV_BIN, "run", DRAW_SCRIPT]
     try:
-        subprocess.run(cmd, check=True)
+        subprocess.run(cmd, check=True, timeout=UPDATE_EPD_TIMEOUT_SECONDS)
     except subprocess.CalledProcessError as exc:
         print(f"update_epd failed: {exc}", file=sys.stderr)
         sys.exit(exc.returncode)
+    except subprocess.TimeoutExpired:
+        print(
+            f"update_epd timed out after {UPDATE_EPD_TIMEOUT_SECONDS} seconds",
+            file=sys.stderr,
+        )
+        sys.exit(124)
 
 
 if __name__ == "__main__":
