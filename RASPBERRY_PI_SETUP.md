@@ -217,6 +217,10 @@ chmod +x ~/update_epd.py
 - override LED: `override = force_off` の間だけ点灯
 - location LED: `location = on_campus` の間だけ点灯
 
+LED の点灯条件は時刻では変わりません。時間外かどうかは画面表示側の判定であり、LED は状態ファイルだけを見て切り替わります。
+
+`button_controller.py` は、LED 更新とボタン応答を先に行い、`update_epd.py` はバックグラウンドスレッドで直列実行します。そのため、電子ペーパー更新に時間がかかっても LED の点灯は遅れません。
+
 GPIO の既定値はスクリプト内で以下です。
 
 - override ボタン: GPIO5
@@ -228,8 +232,21 @@ GPIO の既定値はスクリプト内で以下です。
 
 `~/update_epd.py` は既定で 100 秒のタイムアウト付きです。電子ペーパー未接続や `BUSY` 待ちで停止した場合でも、100 秒で復帰します。必要なら環境変数で変更できます。`0` 以下を指定するとタイムアウトしません。
 
+タイムアウト時や `Ctrl-C` 時には、`uv run draw-dashboard.py` の子プロセスまでまとめて終了します。以前のプロセスが残っていると `GPIO busy` になるため、テスト前に掃除したい場合は次を実行します。
+
+```sh
+pkill -f draw-dashboard.py
+```
+
 ```sh
 export UPDATE_EPD_TIMEOUT_SECONDS=30
+```
+
+表示完了まで 30 秒以上かかる環境では、次のどちらかを使ってください。
+
+```sh
+export UPDATE_EPD_TIMEOUT_SECONDS=0
+export UPDATE_EPD_TIMEOUT_SECONDS=180
 ```
 
 ## 15. ボタン監視の起動テスト
@@ -237,6 +254,12 @@ export UPDATE_EPD_TIMEOUT_SECONDS=30
 ```sh
 python3 ~/button_controller.py
 ```
+
+確認ポイント:
+
+- `~/override.json` が `{"override": "force_off"}` なら override LED が点灯する
+- location ボタンを押すと location LED が即時に切り替わる
+- 画面更新がタイムアウトしても LED は切り替わる
 
 ## 16. ボタン監視を systemd 化
 
@@ -255,6 +278,16 @@ Restart=always
 
 [Install]
 WantedBy=multi-user.target
+```
+
+タイムアウト値を固定したい場合は `Environment` を追加します。
+
+```ini
+[Service]
+Environment=UPDATE_EPD_TIMEOUT_SECONDS=0
+ExecStart=/usr/bin/python3 %h/button_controller.py
+WorkingDirectory=%h
+Restart=always
 ```
 
 配置:
@@ -291,7 +324,7 @@ import requests
 from PIL import Image
 from io import BytesIO
 
-url = "http://<MacのIP>:3000/dithered-image.png"
+url = "http://localhost:3000/dithered-image.png"
 
 res = requests.get(url)
 img = Image.open(BytesIO(res.content))
