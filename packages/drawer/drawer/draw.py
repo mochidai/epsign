@@ -24,8 +24,9 @@ def _ensure_waveshare_lib_on_path():
     for candidate in candidates:
         if candidate.exists():
             candidate_str = str(candidate)
-            if candidate_str not in sys.path:
-                sys.path.append(candidate_str)
+            if candidate_str in sys.path:
+                sys.path.remove(candidate_str)
+            sys.path.insert(0, candidate_str)
             return
 
     raise ModuleNotFoundError(
