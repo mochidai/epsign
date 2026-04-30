@@ -2,6 +2,7 @@
 # -*- coding:utf-8 -*-
 import os
 from pathlib import Path
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 from drawer import draw, get_url_image
 from dotenv import load_dotenv
@@ -20,9 +21,14 @@ if url is None:
     print("Please set DASHBOARD_URL in packages/doorsign/.env")
     exit()
 
-print("get image from :", url)
+parts = urlsplit(url)
+query = dict(parse_qsl(parts.query, keep_blank_values=True))
+query["refresh"] = "1"
+fresh_url = urlunsplit(parts._replace(query=urlencode(query)))
 
-img = get_url_image(url)
+print("get image from :", fresh_url)
+
+img = get_url_image(fresh_url)
 
 print("draw image")
 draw("epd10in85", img)

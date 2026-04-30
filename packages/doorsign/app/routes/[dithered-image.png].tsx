@@ -6,10 +6,11 @@ import { takeScreenshot } from "~/features/screenshot/takeScreenshot";
 export const loader: LoaderFunction = async ({ request }) => {
   const port = process.env.SERVER_PORT || 3000;
   const url = `http://localhost:${port}/dashboard`;
+  const shouldRefresh = new URL(request.url).searchParams.get("refresh") === "1";
 
   const cache = DCache.getInstance();
 
-  let dithredImg = cache.get<Buffer>("dithredImg");
+  let dithredImg = shouldRefresh ? undefined : cache.get<Buffer>("dithredImg");
 
   if (!dithredImg) {
     const ss = await takeScreenshot(url);
