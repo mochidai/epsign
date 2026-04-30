@@ -13,7 +13,7 @@ export const loader: LoaderFunction = async ({ request }) => {
   if (!img) {
     img = await takeScreenshot(url);
 
-    cache.set("img", img, 60 * 60 * 1000);
+    cache.set("img", img, 15 * 60 * 1000);
   }
 
   return new Response(img, {

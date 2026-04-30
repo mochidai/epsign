@@ -8,6 +8,28 @@ from pathlib import Path
 
 
 HOME_DIR = Path.home()
+ENV_FILE_PATH = Path(os.getenv("DOORSIGN_ENV_PATH", str(HOME_DIR / "epsign/packages/doorsign/.env")))
+
+
+def load_env_file_defaults(path: Path):
+    if not path.exists():
+        return
+    for raw_line in path.read_text().splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        key = key.strip()
+        value = value.strip()
+        if not key or key in os.environ:
+            continue
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in {'"', "'"}:
+            value = value[1:-1]
+        os.environ[key] = value
+
+
+load_env_file_defaults(ENV_FILE_PATH)
+
 UV_BIN = os.getenv("UV_BIN", str(HOME_DIR / ".local/bin/uv"))
 DRAW_SCRIPT = os.getenv("DRAW_SCRIPT", str(HOME_DIR / "epsign/packages/drawer/draw-dashboard.py"))
 UPDATE_EPD_TIMEOUT_SECONDS = float(os.getenv("UPDATE_EPD_TIMEOUT_SECONDS", "100"))

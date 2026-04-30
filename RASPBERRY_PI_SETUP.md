@@ -86,6 +86,19 @@ ls python/examples/epd_10in85_test.py
 | BUSY | GPIO24 |
 | PWR | GPIO18 |
 
+ボタンと LED の配線は以下です。
+
+| 部品 | Raspberry Pi |
+|---|---|
+| override ボタン | GPIO5 と GND |
+| location ボタン | GPIO6 と GND |
+| override LED | GPIO16 |
+| location LED | GPIO23 |
+
+ボタンは `pull_up=True` 前提なので、押したときに GPIO と GND が導通する配線にします。
+
+LED は GPIO から抵抗を介して接続してください。既定では「GPIO を High にすると点灯」する前提です。配線方向や LED モジュールの極性が逆の場合は、点灯ロジックの調整が必要です。
+
 ## 6. Waveshare 単体テスト
 
 ```sh
@@ -121,22 +134,25 @@ nano packages/doorsign/.env
 ```
 
 設定内容:
+次の変数を設定する
+- GOOGLE_CALENDAR_ID: GoogleカレンダーのID
+- GOOGLE_API_KEY: Google Calendar API を呼び出すための API キー
+- SERVER_PORT: 電子ペーパに表示する画像を保持しているDocker上のサーバのポート
+- DASHBOARD_URL: 電子ペーパに表示する画像のURL
+- UPDATE_EPD_TIMEOUT_SECONDS: ボタンを押してトリガーする電子ペーパー描画のタイムアウト時間（秒）
+
 
 ```properties
 GOOGLE_CALENDAR_ID="your_calendar_id@example.com"
 GOOGLE_API_KEY="your_google_api_key"
 SERVER_PORT=3000
-```
-
-## 9. drawer の環境変数を設定
-
-```sh
-cat > packages/drawer/.env <<'EOF'
 DASHBOARD_URL=http://127.0.0.1:3000/dithered-image.png
-EOF
+UPDATE_EPD_TIMEOUT_SECONDS=0
 ```
 
-## 10. doorsign を起動
+`drawer` とボタン監視スクリプトもこの `packages/doorsign/.env` を参照します。
+
+## 9. doorsign を起動
 
 ```sh
 docker compose up -d --build
@@ -148,7 +164,7 @@ docker compose up -d --build
 docker compose ps
 ```
 
-## 11. uv をインストール
+## 10. uv をインストール
 
 ```sh
 curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -157,7 +173,7 @@ source ~/.bashrc
 uv --version
 ```
 
-## 12. drawer の依存をインストール
+## 11. drawer の依存をインストール
 
 ```sh
 cd packages/drawer
@@ -170,7 +186,7 @@ uv sync
 - `uv sync` 時に `error: command 'swig' failed: No such file or directory` が出た場合は、`swig`, `build-essential`, `python3-dev` が不足しています
 - `uv sync` 時に `/usr/bin/ld: cannot find -llgpio` が出た場合は、`liblgpio-dev` が不足しています
 
-## 13. 状態ファイルを初期化
+## 12. 状態ファイルを初期化
 
 `doorsign` は以下の状態ファイルを参照します。
 
@@ -263,7 +279,7 @@ python3 ~/button_controller.py
 
 ## 16. ボタン監視を systemd 化
 
-サービスファイルのテンプレートは `systemd/epdash-button.service` にあります。Raspberry Pi では以下の内容で配置します。
+サービスファイルのテンプレートは `systemd/epsign-button.service` にあります。Raspberry Pi では以下の内容で配置します。
 
 ```ini
 [Unit]
@@ -273,7 +289,6 @@ Wants=network-online.target
 
 [Service]
 User=mochidai
-Environment=UPDATE_EPD_TIMEOUT_SECONDS=0
 ExecStart=/usr/bin/python3 /home/mochidai/button_controller.py
 WorkingDirectory=/home/mochidai
 Restart=always

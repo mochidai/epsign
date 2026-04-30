@@ -42,6 +42,8 @@ Raspberry Pi 4 と Waveshare 10.85 inch e-Paper HAT+ を使った電子ペーパ
 GOOGLE_CALENDAR_ID="your_calendar_id@example.com"
 GOOGLE_API_KEY="your_google_api_key"
 SERVER_PORT=3000
+DASHBOARD_URL="http://127.0.0.1:3000/dithered-image.png"
+UPDATE_EPD_TIMEOUT_SECONDS=0
 ```
 
 作成例:
@@ -52,15 +54,7 @@ cp packages/doorsign/.env.example packages/doorsign/.env
 
 その後、`packages/doorsign/.env` を編集して値を埋めます。
 
-### drawer
-
-`packages/drawer/.env` を作成して以下を設定します。
-
-```properties
-DASHBOARD_URL="http://127.0.0.1:3000/dithered-image.png"
-```
-
-同じ Raspberry Pi 上で `doorsign` を動かすなら、この URL のままで構いません。
+`drawer` とボタン監視スクリプトも `packages/doorsign/.env` を参照します。同じ Raspberry Pi 上で `doorsign` を動かすなら、この URL のままで構いません。
 
 ## サーバー
 

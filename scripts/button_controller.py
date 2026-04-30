@@ -13,6 +13,28 @@ from pathlib import Path
 from gpiozero import Button, LED
 
 HOME_DIR = Path.home()
+ENV_FILE_PATH = Path(os.getenv("DOORSIGN_ENV_PATH", str(HOME_DIR / "epsign/packages/doorsign/.env")))
+
+
+def load_env_file_defaults(path: Path):
+    if not path.exists():
+        return
+    for raw_line in path.read_text().splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        key = key.strip()
+        value = value.strip()
+        if not key or key in os.environ:
+            continue
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in {'"', "'"}:
+            value = value[1:-1]
+        os.environ[key] = value
+
+
+load_env_file_defaults(ENV_FILE_PATH)
+
 OVERRIDE_BUTTON_GPIO = int(os.getenv("OVERRIDE_BUTTON_GPIO", "5"))
 LOCATION_BUTTON_GPIO = int(os.getenv("LOCATION_BUTTON_GPIO", "6"))
 OVERRIDE_LED_GPIO = int(os.getenv("OVERRIDE_LED_GPIO", "16"))

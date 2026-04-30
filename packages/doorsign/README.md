@@ -21,6 +21,8 @@
 GOOGLE_CALENDAR_ID="your_calendar_id@example.com"
 GOOGLE_API_KEY="your_google_api_key"
 SERVER_PORT=3000
+DASHBOARD_URL="http://127.0.0.1:3000/dithered-image.png"
+UPDATE_EPD_TIMEOUT_SECONDS=0
 ```
 
 補足:
@@ -28,6 +30,8 @@ SERVER_PORT=3000
 - `GOOGLE_CALENDAR_ID` は busy 判定に使う Google Calendar ID
 - `GOOGLE_API_KEY` は Google Calendar API 呼び出しに利用
 - `SERVER_PORT` は `/image.png` と `/dithered-image.png` が内部参照するポート
+- `DASHBOARD_URL` は `drawer` が取得する画像 URL
+- `UPDATE_EPD_TIMEOUT_SECONDS` は Raspberry Pi 側の `update_epd.py` のタイムアウト秒数。`0` 以下で無制限
 
 ## 在室状態ファイル
 

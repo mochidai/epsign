@@ -24,7 +24,7 @@ export const loader: LoaderFunction = async ({ request }) => {
       "#FFFFFF", // White
     ]; // カラーパレット(Waveshare 10.85 inch e-Paper HAT+)
     dithredImg = await ditherImageBuffer(ss, palette);
-    cache.set("dithredImg", dithredImg, 60 * 60 * 1000);
+    cache.set("dithredImg", dithredImg, 15 * 60 * 1000);
   }
 
   return new Response(dithredImg, {

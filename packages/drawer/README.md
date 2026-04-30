@@ -15,7 +15,7 @@ uv sync
 
 ## 環境設定
 
-`.env` に以下を設定します。
+`../doorsign/.env` に以下を設定します。`draw-dashboard.py` はこのファイルを優先して読み込みます。
 
 ```env
 DASHBOARD_URL="http://127.0.0.1:3000/dithered-image.png"
