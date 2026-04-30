@@ -77,10 +77,10 @@ export default function Dashboard() {
 
   if (isOutsideHours) {
     statusText = "対応不可";
-    subText = isHoliday ? "祝日・時間外" : "時間外";
+    subText = isHoliday ? "祝日・時間外 Off" : "時間外 Off";
   } else if (isManualBusy) {
     statusText = "対応不可";
-    subText = "作業中";
+    subText = "作業中 Busy";
   } else if (isBusy && currentEvent) {
     statusText = "対応不可";
     subText = `予定あり（〜${formatTime(currentEvent.end.dateTime)}）`;
@@ -88,7 +88,7 @@ export default function Dashboard() {
     statusText = "対応可";
 
     if (showLocation) {
-      subText = locationState.location === "on_campus" ? "学内" : "学外・リモート可";
+      subText = locationState.location === "on_campus" ? "学内にいます" : "学外・リモートです";
     }
   }
 
