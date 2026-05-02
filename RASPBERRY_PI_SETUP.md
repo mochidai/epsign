@@ -140,6 +140,7 @@ nano packages/doorsign/.env
 - SERVER_PORT: 電子ペーパに表示する画像を保持しているDocker上のサーバのポート
 - DASHBOARD_URL: 電子ペーパに表示する画像のURL
 - UPDATE_EPD_TIMEOUT_SECONDS: ボタンを押してトリガーする電子ペーパー描画のタイムアウト時間（秒）
+- LED_REFRESH_INTERVAL_SECONDS: location LED を定期再評価する間隔（秒）
 
 
 ```properties
@@ -148,6 +149,7 @@ GOOGLE_API_KEY="your_google_api_key"
 SERVER_PORT=3000
 DASHBOARD_URL=http://127.0.0.1:3000/dithered-image.png
 UPDATE_EPD_TIMEOUT_SECONDS=0
+LED_REFRESH_INTERVAL_SECONDS=60
 ```
 
 `drawer` とボタン監視スクリプトもこの `packages/doorsign/.env` を参照します。

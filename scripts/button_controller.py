@@ -40,6 +40,7 @@ LOCATION_BUTTON_GPIO = int(os.getenv("LOCATION_BUTTON_GPIO", "6"))
 OVERRIDE_LED_GPIO = int(os.getenv("OVERRIDE_LED_GPIO", "16"))
 LOCATION_LED_GPIO = int(os.getenv("LOCATION_LED_GPIO", "23"))
 BUTTON_HOLD_SECONDS = float(os.getenv("BUTTON_HOLD_SECONDS", "1.5"))
+LED_REFRESH_INTERVAL_SECONDS = float(os.getenv("LED_REFRESH_INTERVAL_SECONDS", "60"))
 
 OVERRIDE_PATH = Path(os.getenv("OVERRIDE_PATH", str(HOME_DIR / "override.json")))
 LOCATION_STATE_PATH = Path(os.getenv("LOCATION_STATE_PATH", str(HOME_DIR / "location_state.json")))
@@ -111,6 +112,11 @@ def update_worker():
         run_update_epd()
 
 
+def location_led_worker(location_led: LED):
+    while not shutdown_requested.wait(timeout=LED_REFRESH_INTERVAL_SECONDS):
+        refresh_location_led(location_led)
+
+
 def refresh_led(override_led: LED):
     state = load_override_state()
     if state.get("override") == "force_off":
@@ -120,11 +126,30 @@ def refresh_led(override_led: LED):
 
 
 def refresh_location_led(location_led: LED):
-    state = load_location_state()
-    if state.get("location") == "on_campus":
+    if get_effective_location() == "on_campus":
         location_led.on()
     else:
         location_led.off()
+
+
+def is_within_location_display_hours(now: datetime | None = None) -> bool:
+    current = now.astimezone() if now else datetime.now().astimezone()
+    if current.weekday() >= 5:
+        return False
+
+    total_minutes = current.hour * 60 + current.minute
+    return 9 * 60 <= total_minutes < 17 * 60
+
+
+def get_effective_location(now: datetime | None = None) -> str:
+    state = load_location_state()
+    if state.get("location") != "on_campus":
+        return "off_campus"
+
+    if not is_within_location_display_hours(now):
+        return "off_campus"
+
+    return "on_campus"
 
 
 def toggle_override(override_led: LED):
@@ -182,6 +207,8 @@ def main():
     }
     worker = threading.Thread(target=update_worker, daemon=True)
     worker.start()
+    led_worker = threading.Thread(target=location_led_worker, args=(location_led,), daemon=True)
+    led_worker.start()
 
     def on_override_pressed():
         state["override_pressed_at"] = time.monotonic()
