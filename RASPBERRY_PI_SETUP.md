@@ -22,6 +22,11 @@ e-Paper (SPI)
 - GitHub から `epsign` を取得できる
 - Waveshare 10.85 inch e-Paper HAT+ を利用する
 
+配線図は次の通り。
+
+<img src="./img/wiring.jpg" width="500">
+
+
 ## 1. 初期セットアップ
 
 ```sh
@@ -233,9 +238,9 @@ chmod +x ~/update_epd.py
 - override ボタン長押し: `override.json` を `force_off` と `null` でトグル
 - location ボタン短押し: `location_state.json` の `on_campus` / `off_campus` をトグル
 - override LED: `override = force_off` の間だけ点灯
-- location LED: `location = on_campus` の間だけ点灯
+- location LED: `location = on_campus` かつ平日 9:00-17:00 の間だけ点灯
 
-LED の点灯条件は時刻では変わりません。時間外かどうかは画面表示側の判定であり、LED は状態ファイルだけを見て切り替わります。
+location LED は `LED_REFRESH_INTERVAL_SECONDS` ごとに再評価されます。既定値は 60 秒です。
 
 `button_controller.py` は、LED 更新とボタン応答を先に行い、`update_epd.py` はバックグラウンドスレッドで直列実行します。そのため、電子ペーパー更新に時間がかかっても LED の点灯は遅れません。
 

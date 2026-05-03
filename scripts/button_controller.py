@@ -2,11 +2,11 @@
 
 import json
 import os
+import shlex
 import signal
 import subprocess
 import sys
 import threading
-import time
 from datetime import datetime
 from pathlib import Path
 
@@ -35,12 +35,41 @@ def load_env_file_defaults(path: Path):
 
 load_env_file_defaults(ENV_FILE_PATH)
 
-OVERRIDE_BUTTON_GPIO = int(os.getenv("OVERRIDE_BUTTON_GPIO", "5"))
-LOCATION_BUTTON_GPIO = int(os.getenv("LOCATION_BUTTON_GPIO", "6"))
-OVERRIDE_LED_GPIO = int(os.getenv("OVERRIDE_LED_GPIO", "16"))
-LOCATION_LED_GPIO = int(os.getenv("LOCATION_LED_GPIO", "23"))
-BUTTON_HOLD_SECONDS = float(os.getenv("BUTTON_HOLD_SECONDS", "1.5"))
-LED_REFRESH_INTERVAL_SECONDS = float(os.getenv("LED_REFRESH_INTERVAL_SECONDS", "60"))
+
+def get_int_env(name: str, default: int) -> int:
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    try:
+        return int(raw)
+    except ValueError:
+        print(f"Invalid {name}={raw!r}; using default {default}", file=sys.stderr, flush=True)
+        return default
+
+
+def get_float_env(name: str, default: float, *, minimum: float | None = None) -> float:
+    raw = os.getenv(name)
+    if raw is None:
+        value = default
+    else:
+        try:
+            value = float(raw)
+        except ValueError:
+            print(f"Invalid {name}={raw!r}; using default {default}", file=sys.stderr, flush=True)
+            value = default
+
+    if minimum is not None and value < minimum:
+        print(f"{name}={value} is below minimum {minimum}; using {minimum}", file=sys.stderr, flush=True)
+        return minimum
+    return value
+
+
+OVERRIDE_BUTTON_GPIO = get_int_env("OVERRIDE_BUTTON_GPIO", 5)
+LOCATION_BUTTON_GPIO = get_int_env("LOCATION_BUTTON_GPIO", 6)
+OVERRIDE_LED_GPIO = get_int_env("OVERRIDE_LED_GPIO", 16)
+LOCATION_LED_GPIO = get_int_env("LOCATION_LED_GPIO", 23)
+BUTTON_HOLD_SECONDS = get_float_env("BUTTON_HOLD_SECONDS", 1.5, minimum=0.1)
+LED_REFRESH_INTERVAL_SECONDS = get_float_env("LED_REFRESH_INTERVAL_SECONDS", 60.0, minimum=1.0)
 
 OVERRIDE_PATH = Path(os.getenv("OVERRIDE_PATH", str(HOME_DIR / "override.json")))
 LOCATION_STATE_PATH = Path(os.getenv("LOCATION_STATE_PATH", str(HOME_DIR / "location_state.json")))
@@ -48,8 +77,11 @@ UPDATE_EPD_COMMAND = os.getenv(
     "UPDATE_EPD_COMMAND",
     f"/usr/bin/python3 {HOME_DIR / 'update_epd.py'}",
 )
+UPDATE_EPD_ARGS = shlex.split(UPDATE_EPD_COMMAND)
 update_requested = threading.Event()
 shutdown_requested = threading.Event()
+DEFAULT_OVERRIDE_STATE = {"override": None}
+DEFAULT_LOCATION = "off_campus"
 
 
 def today_jst() -> str:
@@ -58,44 +90,55 @@ def today_jst() -> str:
 
 def load_override_state() -> dict:
     try:
-        return json.loads(OVERRIDE_PATH.read_text())
+        return json.loads(OVERRIDE_PATH.read_text(encoding="utf-8"))
     except Exception:
-        return {"override": None}
+        return DEFAULT_OVERRIDE_STATE.copy()
+
+
+def write_json_atomically(path: Path, data: dict):
+    temp_path = path.with_name(f"{path.name}.tmp")
+    temp_path.write_text(
+        json.dumps(data, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    temp_path.replace(path)
 
 
 def save_override_state(override_value):
-    OVERRIDE_PATH.write_text(
-        json.dumps({"override": override_value}, ensure_ascii=False),
-    )
+    write_json_atomically(OVERRIDE_PATH, {"override": override_value})
 
 
 def load_location_state() -> dict:
     today = today_jst()
     try:
-        data = json.loads(LOCATION_STATE_PATH.read_text())
+        data = json.loads(LOCATION_STATE_PATH.read_text(encoding="utf-8"))
     except Exception:
-        return {"date": today, "location": "off_campus"}
+        return {"date": today, "location": DEFAULT_LOCATION}
 
     if data.get("date") != today:
-        return {"date": today, "location": "off_campus"}
+        return {"date": today, "location": DEFAULT_LOCATION}
 
     location = data.get("location")
     if location not in {"on_campus", "off_campus"}:
-        location = "off_campus"
+        location = DEFAULT_LOCATION
 
     return {"date": today, "location": location}
 
 
 def save_location_state(location: str):
-    LOCATION_STATE_PATH.write_text(
-        json.dumps({"date": today_jst(), "location": location}, ensure_ascii=False),
+    write_json_atomically(
+        LOCATION_STATE_PATH,
+        {"date": today_jst(), "location": location},
     )
 
 
 def run_update_epd():
     print(f"Running update command: {UPDATE_EPD_COMMAND}", flush=True)
+    if not UPDATE_EPD_ARGS:
+        print("UPDATE_EPD_COMMAND is empty; skipping update", file=sys.stderr, flush=True)
+        return
     try:
-        subprocess.run(UPDATE_EPD_COMMAND, shell=True, check=True)
+        subprocess.run(UPDATE_EPD_ARGS, check=True)
     except subprocess.CalledProcessError as exc:
         print(f"update_epd failed: {exc}", file=sys.stderr, flush=True)
 
@@ -178,7 +221,14 @@ def ensure_state_files():
         save_override_state(None)
 
     if not LOCATION_STATE_PATH.exists():
-        save_location_state("off_campus")
+        save_location_state(DEFAULT_LOCATION)
+
+
+def close_device(device):
+    try:
+        device.close()
+    except Exception:
+        pass
 
 
 def main():
@@ -201,17 +251,13 @@ def main():
         bounce_time=0.05,
     )
 
-    state = {
-        "override_pressed_at": None,
-        "override_held": False,
-    }
+    state = {"override_held": False}
     worker = threading.Thread(target=update_worker, daemon=True)
     worker.start()
     led_worker = threading.Thread(target=location_led_worker, args=(location_led,), daemon=True)
     led_worker.start()
 
     def on_override_pressed():
-        state["override_pressed_at"] = time.monotonic()
         state["override_held"] = False
 
     def on_override_held():
@@ -219,11 +265,8 @@ def main():
         toggle_override(override_led)
 
     def on_override_released():
-        if state["override_pressed_at"] is None:
-            return
         if not state["override_held"]:
             request_update_epd()
-        state["override_pressed_at"] = None
         state["override_held"] = False
 
     def on_location_pressed():
@@ -236,11 +279,10 @@ def main():
 
     def shutdown_handler(signum, frame):
         shutdown_requested.set()
-        update_requested.set()
-        override_led.close()
-        location_led.close()
-        override_button.close()
-        location_button.close()
+        close_device(override_led)
+        close_device(location_led)
+        close_device(override_button)
+        close_device(location_button)
         sys.exit(0)
 
     signal.signal(signal.SIGTERM, shutdown_handler)
